@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Gwawa</title>
+    <link rel="icon" href="./img/state.png">
+    <style>
+        body {
+            margin: 0 auto;
+            width: 100vw;
+            height: 100vh;
+            text-align: center;
+            background-color: lightyellow;
+            cursor: url("./img/icons8-hammer-80.png"), auto;
+            background-image: url(./img/圖片2.png);
+
+
+
+        }
+
+
+        body .content {
+            display: inline-block;
+            margin: 0 auto;
+            top: 10%;
+            position: relative;
+
+        }
+
+        div:active {
+            cursor: url("img/icons8-hammer-2.png"), auto;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        .cell {
+            width: 200px;
+            height: 200px;
+            border: 5px solid black;
+            line-height: 0;
+            background-color: yellow;
+            
+        }
+
+
+        .control {
+            position: relative;
+            top: 5px;
+            width: 330px;
+            margin: 0 auto;
+        }
+
+        #time,
+        #combo {
+            width: 30%;
+            display: inline-block;
+            font-weight: bolder;
+            font-size: 17px;
+        }
+        #rule{
+            border: dashed black ;
+            background-color: rgba(32, 178, 171, 0.671);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="content">
+        <div class="row">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(0)">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(1)">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(2)">
+        </div>
+        <div class="row">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(3)">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(4)">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(5)">
+        </div>
+        <div class="row">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(6)">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(7)">
+            <img src="./img/state.png" class="cell" title="state" onclick="getcombo(8)">
+            
+        </div>
+        <div id="rule">
+            <div class="control">
+                <div style="width:100%;display: flex">
+                    <span id="time">剩餘時間:60s</span>
+                    <input type="button" value="遊戲開始" style="width:40%">
+                    <span id="combo">成績分數:0</span>
+                </div>
+                <hr>
+                <b>遊戲說明</b>
+                <p>平時溫馴的小吉異常暴走了，請點擊生氣的小吉(紅色)教訓他以獲得分數（滿分 100)</p>
+                <hr>
+            </div>
+        </div>
+    </div>
+    <script>
+        var btn = document.getElementsByTagName("input")[0];//找到input
+        var time = document.getElementById("time");//找到時間
+        var combo = document.getElementById("combo");//找到分數
+        var thedog = document.getElementsByClassName("cell");
+        var flag = 0; //遊戲開始為1，停止為0
+        var sec = 0;
+        var count = 0;
+        var wait = new Array();//放生器狗狗事件，陣列有100個位置
+        btn.addEventListener("click", gamestart);//規劃點選動作
+
+        function gamestart() { //遊戲開始
+            flag = 1;
+            count = 0;
+            sec = 60;
+            combo.textContent = `成績分數:0`;
+            time.textContent = `剩餘時間:60s`;
+            btn.removeEventListener("click", gamestart);//關閉 btn，不要再讓人去按他觸發多餘的 gamestart()
+
+            var start = setInterval(function () { //倒數計時開始，每秒做顯示剩餘時間
+                if (sec == 0) { //0則停止重複延遲
+                    clearInterval(start);
+                    flag = 0;
+                    window.alert(`你的分數：${count}`);
+                    btn.addEventListener("click", gamestart);//開放點選
+                }
+                else {
+                    sec--;
+                    time.textContent = `剩餘時間:${sec}s`;
+                }
+            }, 1000);
+
+            for (let i = 0; i < 100; i++) { //100次機會
+                let timeout = Math.floor(Math.random() * 57000);  //range=0.1~56.9,放大到毫秒=>0~59999
+                let who = Math.floor(Math.random() * 9); //隨機 0~8 處
+                let delay = Math.floor(Math.random() * 3) + 1; //隨機 1~3 秒
+
+                setTimeout(function () { //指定好100隻的時間軸
+                    showdog(who, delay, i);
+                }, timeout);
+            }
+        }
+        //觸發紅燈事件
+        function showdog(who, delay, id) {
+            if (thedog[who].title != "state") {//如果狗狗不是等待中，那麼往下一個位置推，並再晚0.5秒出現
+                let next = (who + 1) % 9;
+                setTimeout(function () {
+                    showdog(next, delay, id);
+                }, 500);
+            }
+            else {//確定該位置是黃色，可以進行紅色事件
+                thedog[who].src = "img/on.png";
+                thedog[who].title = "angry";
+                thedog[who].alt = id;
+                thedog[who].style.backgroundColor = "red";
+
+                wait[id] = setTimeout(function () {//N秒後回到等待狀態，並記下此事為wait[id]
+                    thedog[who].src = "img/state.png";
+                    thedog[who].title = "state";
+                    thedog[who].style.backgroundColor = null;
+                }, delay * 1000);
+            }
+        }
+
+
+        function getcombo(who) {//每次按下指定鍵時 計分且將紅色變綠色  who=0~8
+            if (thedog[who].title == "angry" && flag) {
+                thedog[who].src = "img/off.png";
+                thedog[who].title = "angry";
+                thedog[who].style.backgroundColor = "green";
+                id = thedog[who].alt;
+                clearTimeout(wait[id]); //取消之前的倒數恢復
+
+                /*加分*/
+                count++;
+                combo.textContent = `成績分數:${count}`;
+
+                /*1秒後改等待狀態*/
+                setTimeout(function () { //red 多久之後自己變回 yellow
+                    thedog[who].src = "img/state.png";
+                    thedog[who].title = "state";
+                    thedog[who].alt = null;
+                    thedog[who].style.backgroundColor = null;
+                }, 1000);
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
